@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Finch's Multi-Function Dashboard</title>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Multi Function Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Courier New', monospace;
+      background-color: #0d0d0d;
+      color: #00ffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 22px;
+      margin-bottom: 20px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .hack-button {
+      background-color: #002222;
+      border: 2px solid #00ffff;
+      color: #00ffff;
+      padding: 14px 20px;
+      font-size: 14px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffff33;
+      min-width: 140px;
+      text-align: center;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background-color: rgba(0, 0, 0, 0.95);
+      color: #00ffcc;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    .overlay.show {
+      display: flex;
+      animation: fadeIn 0.5s ease-in-out;
+    }
+
+    .hack-title {
+      font-size: 16px;
+      margin-bottom: 10px;
+      font-weight: bold;
+      color: #00ffff;
+    }
+
+    .connecting {
+      font-size: 14px;
+      margin-bottom: 10px;
+      animation: pulse 1.2s infinite;
+    }
+
+    .hack-log {
+      font-size: 13px;
+      text-align: left;
+      white-space: pre-wrap;
+      padding: 15px;
+      width: 90%;
+      max-width: 400px;
+      border: 1px solid #00cccc;
+      background: #111;
+      box-shadow: 0 0 10px #00cccc55;
+      overflow-y: auto;
+    }
+
+    .final-message {
+      color: #00ff88;
+      margin-top: 12px;
+      font-weight: bold;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.3; }
+      50% { opacity: 1; }
+      100% { opacity: 0.3; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Multi Deployment Dashboard</h1>
+
+  <div class="button-row">
+
+    <button class="hack-button" onclick="startHack('override')">Override Access</button>
+    <button class="hack-button" onclick="startHack('clone')">Clone Token</button>
+    <button class="hack-button" onclick="startHack('scannet')">Network Scan</button>
+    <button class="hack-button" onclick="startHack('bypassf')">Bypass Firewall</button>
+    <button class="hack-button" onclick="startHack('disabf')">Disable Firewall</button>
+    <button class="hack-button" onclick="startHack('bypassav')">Bypass AV</button>
+    <button class="hack-button" onclick="startHack('disabav')">Disable AV</button>
+    <button class="hack-button" onclick="startHack('buildp')">Build Payload</button>
+    <button class="hack-button" onclick="startHack('deppay')">Deploy Payload</button>
+    <button class="hack-button" onclick="startHack('depbeac')">Deploy Beacon</button>
+    <button class="hack-button" onclick="startHack('payload')">Deploy Reverse Shell</button>
+    <button class="hack-button" onclick="startHack('bindsh')">Deploy Bind shell</button>
+    <button class="hack-button" onclick="startHack('depshell')">Deploy Remote Shell</button>
+    <button class="hack-button" onclick="startHack('accfile')">Access File</button>
+    <button class="hack-button" onclick="startHack('credharv')">Harvest Credential</button>
+    <button class="hack-button" onclick="startHack('latmov')">Lateral Movement</button>
+    <button class="hack-button" onclick="startHack('dataex')">Data Exfiltration</button>
+    <button class="hack-button" onclick="startHack('logs')">Extract Logs</button>
+    <button class="hack-button" onclick="startHack('cash')">Access POS Device</button>
+
+
+<!--NEW BUTTONS
+
+-->
+
+
+  </div>
+
+  <div class="overlay" id="hackOverlay">
+    <div class="hack-title" id="hackTitle">Running Operation</div>
+    <div class="connecting" id="hackConnecting">[ Establishing Secure Link... ]</div>
+    <div class="hack-log" id="hackLog"></div>
+    <div class="final-message" id="finalMsg" style="display: none;">COMPLETE</div>
+  </div>
+
+  <script>
+    const overlay = document.getElementById("hackOverlay");
+    const hackLog = document.getElementById("hackLog");
+    const finalMsg = document.getElementById("finalMsg");
+    const hackTitle = document.getElementById("hackTitle");
+
+    const sequences = {
+      payload: {
+        title: "Reverse Shell Deployment",
+        log: [
+          "[*] Target located at 192.168.1.42",
+          "[*] Generating tcp/reverse_shell binary...",
+          "[+] Binary ready. Size: 23.4KB",
+          "[*] Deploying to target system...",
+          "[+] Binary executed successfully.",
+          "[*] Awaiting reverse shell...",
+          "[+] Remote session established."
+        ],
+        final: "ACCESS GRANTED"
+      },
+      override: {
+        title: "Access Override",
+        log: [
+          "[*] Connecting to authentication server...",
+          "[*] Spoofing security token...",
+          "[!] Token rejected. Retrying with new vector...",
+          "[*] Brute-forcing entry point...",
+          "[+] Permissions elevated.",
+          "[*] Injecting override commands...",
+          "[+] Access level changed: ADMINISTRATOR"
+        ],
+        final: "OVERRIDE SUCCESSFUL"
+      },
+      logs: {
+        title: "Log Extraction",
+        log: [
+          "[*] Connecting to internal node...",
+          "[*] Searching /var/logs/...",
+          "[*] Logs located: 742 entries",
+          "[+] Downloading logs (1.6MB)...",
+          "[*] Verifying hash...",
+          "[+] SHA-256 verified. Logs secured.",
+          "[*] Disconnecting from node..."
+        ],
+        final: "LOGS EXTRACTED"
+      },
+      clone: {
+        title: "Clone Token",
+        log: [
+          "[*] Scanning for HIDProx...",
+          "[*] Searching /var/prox…",
+          "[*] Data located.",
+          "[+] Copying data...",
+          "[*] Preparing attack...",
+          "[+] Replay attack prepared.",
+          "[*] Emitting HIDProx..."
+        ],
+        final: "TOKEN CLONED"
+      },
+      bindsh: {
+        title: "Bind Shell Deployment",
+        log: [
+        "[*] Target located at 192.168.1.42",
+        "[*] Generating tcp/bind_shell binary...",
+        "[+] Binary ready. Size: 21.1KB",
+        "[*] Deploying to target system...",
+        "[+] Binary executed successfully.",
+        "[*] Opening listener on target port 4444...",
+        "[+] Listener active on 192.168.1.42:4444",
+        "[*] Attempting connection to target...",
+        "[+] Connection established to 192.168.1.42:4444",
+        "[*] Bind shell active."
+        ],
+        final: "BIND SHELL: ACTIVE"
+      },  
+      scannet: {
+	      title: "Scan Network",
+	      log: [
+          "[*] Initiating network scan...",
+          "[*] Scanning 192.168.0.1 - 192.168.0.254",
+          "[+] Device found: SEC-GATEWAY [192.168.0.1]",
+          "[+] Device found: INTERNAL-SERVER [192.168.0.42]",
+          "[+] Vulnerability detected on 192.168.0.42: CVE-2025-XXXX"
+        ],
+	      final: "NETWORK SCANNED"
+	      },
+	    bypassf: {
+	    title: "Bypass Firewall",
+	    log: [
+          "[*] Attempting firewall bypass...",
+          "[*] Injecting crafted packets...",
+          "[>] SYN flood detected on port 80, throttling...",
+          "[+] Firewall rule bypassed: Established/Related traffic allowed.",
+          "[*] Establishing reverse shell...",
+          "[*] Firewall analysis initiated...",
+          "[*] Probing open ports...",
+          "[+] Found open port: 22 (SSH)",
+          "[*] Attempting SSH tunneling...",
+          "[+] Tunnel established successfully."
+          ],
+	    final: "FIREWALL BYPASSED"
+	    },
+	    disabf: {
+	    title: "Disable Firewall",
+	    log: [
+          "[*] Attempting to disable local firewall...",
+          "[*] Executing command: netsh advfirewall set allprofiles state off",
+          "[+] Firewall service stopped.",
+          "[*] Searching for firewall management process...",
+          "[+] Found process: Windows Firewall (svchost.exe)",
+          "[*] Attempting to terminate process (PID: XXXX)...",
+          "[+] Process terminated successfully. Firewall disabled."
+        ],
+	    final: "FIREWALL DISABLED"
+	    },
+	    bypassav: {
+	    title: "Bypass Antivirus",
+	    log: [
+          "[*] Attempting AntiVirus bypass...",
+          "[*] Obfuscating payload...",
+          "[>] Suspicious behavior detected by Real-Time Protection.",
+          "[+] Payload execution successful after multiple encoding attempts.",
+          "[*] Analyzing AntiVirus signatures...",
+          "[*] Identifying vulnerable service...",
+          "[+] Found vulnerable service: AntiVirus Updater",
+          "[*] Exploiting service to disable real-time scanning...",
+          "[+] Real-time scanning disabled."
+        ],
+	    final: "ANTI VIRUS BYPASSED"
+	    },
+      disabav: {
+	    title: "Disable Antivirus",
+	    log: [
+          "[*] Attempting to disable AntiVirus software...",
+          "[*] Executing command: taskkill /F /IM antivirus.exe",
+          "[>] Access denied. Retrying with elevated privileges...",
+          "[+] AntiVirus process terminated successfully.",
+          "[*] Searching for AntiVirus control panel...",
+          "[*] Found process: AVControl.exe",
+          "[*] Attempting to close process (PID: 13422)...",
+          "[+] Process closed. AntiVirus likely disabled."
+        ],
+	    final: "ANTI VIRUS DISABLED"
+	    },
+	    buildp: {
+	    title: "Build Payload",
+	    log: [
+          "[*] Initializing payload generation...",
+          "[*] Selecting exploit: MS17-010 EternalBlue",
+          "[*] Configuring target IP: 192.168.1.100",
+          "[*] Setting reverse shell listener: 10.0.0.5:4444",
+          "[*] Generating final payload (stage 1)...",
+          "[*] Payload size: 4096 bytes",
+          "[*] Payload construction complete.",
+          "[*] Building custom payload...",
+          "[*] Injecting shellcode: windows/x64/meterpreter/reverse_tcp",
+          "[*] Setting LHOST: 10.0.0.10",
+          "[*] Setting LPORT: 1234",
+          "[*] Applying evasion techniques...",
+          "[*] Payload ready for deployment."
+        ],
+	    final: "PAYLOAD READY"
+	    },
+    	deppay: {
+	    title: "Deploy Payload",
+	    log: [
+          "[*] Deploying payload to target: 192.168.1.100",
+          "[*] Using delivery method: SMB",
+          "[*] Transmitting payload (4096 bytes)...",
+          "[+] Payload sent successfully.",
+          "[*] Attempting remote execution...",
+          "[*] Executing payload via WMI...",
+          "[+] Payload execution initiated. Waiting for connection..."
+        ],
+	    final: "PAYLOAD DEPLOYED"
+	    },
+	    depbeac: {
+	    title: "Deploy Beacon",
+	    log: [
+          "[*] Deploying beacon to target: 192.168.1.150",
+          "[*] Beacon type: HTTP",
+          "[*] Callback interval: 5 seconds",
+          "[*] Server address: beacon.example.com:8080",
+          "[*] Beacon deployed. Listening for callback...",
+          "[*] Generating staged beacon...",
+          "[*] Stage 1 size: 1024 bytes",
+          "[*] Sending stage 1 to target...",
+          "[*] Stage 2 received and executed. Beacon active."
+        ],
+	    final: "BEACON DEPLOYED"
+	    },
+
+    	depshell: {
+	    title: "Deploy Shell",
+	    log: [
+          "[*] Deploying payload...",
+          "[*] Encoding shell...",
+          "[*] Sending to target...",
+          "[+] Exploit successful!",
+          "[+] Shell opened on 192.168.0.42:4444"
+      ],
+	    final: "SHELL DEPLOYED"
+	    },
+	    accfile: {
+	    title: "File Access",
+	    log: [
+          "[*] Establishing session with target...",
+          "[*] Navigating file system...",
+          "[*] Listing directory: C:\\users\\Public\\Documents",
+          "[+] Found file: confidential.docx",
+          "[*] Downloading file: confidential.docx...",
+          "[+] Download complete: confidential.docx (15KB)",
+          "[*] Browsing remote file system...",
+          "[*] Searching for keywords: 'password';'passwd';'cred' ",
+          "[+] Found potential match in: C:\\config.ini",
+          "[*] Reading file: C:\\config.ini...",
+          "[+] File content retrieved successfully."
+        ],
+	    final: "FILE ACCESSED"
+	    },
+	    credharv: {
+	    title: "Credential Harvest",
+	    log: [
+          "[*] Attempting credential dump...",
+          "[*] Executing Mimikatz module: sekurlsa::logonpasswords",
+          "[+] Found credentials for user: Administrator",
+          "[+] Username: Administrator, Password: SecurePassword123!",
+          "[*] Intercepting network traffic on port 110 (POP3)...",
+          "[+] Captured potential username: user@example.com",
+          "[+] Captured potential password: pop3secret"
+        ],
+	    final: "CREDENTIAL COPIED"
+	    },
+    	latmov: {
+	    title: "Lateral Movement",
+	    log: [
+          "[*] Identifying potential pivot points...",
+          "[+] Found active session on: 192.168.0.50",
+          "[*] Attempting to migrate process...",
+          "[+] Process migration successful (PID: 42137).",
+          "[*] Scanning network for shared folders...",
+          "[+] Found accessible share: \\192.168.0.60\SharedDocs",
+          "[*] Attempting to access shared folder...",
+          "[+] Access granted."
+        ],
+	    final: "MOVED LATERALLY"
+	    },
+    	dataex: {
+	    title: "Data Exfilration",
+	    log: [
+          "[*] Preparing data for exfiltration...",
+          "[*] Compressing files...",
+          "[*] Encrypting data with AES-256...",
+          "[*] Sending data to: exfil.server.net:9999",
+          "[+] Data exfiltration complete (1.2GB).",
+          "[*] Establishing covert channel via DNS...",
+          "[*] Encoding data for DNS tunneling...",
+          "[*] Sending data chunks...",
+          "[+] Data exfiltration successful."
+        ],
+	    final: "DATA EXFILTRATED"
+	    },
+
+      cash: {
+	    title: "Accessing POS Terminal",
+	    log: [
+      "[*] Identifying potential Point-of-Sale (POS) systems on network...",
+      "[*] Scanning subnet 192.168.1.0/24 for open ports 139, 445 (SMB)...",
+      "[+] Found potential POS system: 192.168.1.55 (open ports: 139, 445)",
+      "[*] Attempting to enumerate administrative resources on 192.168.1.55...",
+      "[+] Found directory: C:\\Program Files (x86)\\POS System",
+      "[*] Searching for configuration files containing sensitive data...",
+      "[+] Found file: C:\\Program Files (x86)\\POS System\config.ini",
+      "[*] Analyzing config.ini for database connection strings...",
+      "[+] Found database connection string: Driver={SQLite3};Database=transactions.db",
+      "[*] Attempting remote access to transactions.db POS database...",
+      "[+] Database connection established. Accessing transaction logs..."
+        ],
+	    final: "POS TERMINAL COMPROMISED"
+	    }
+//NEW ATTACKS
+/*
+
+
+*/
+
+    };
+
+    function startHack(type) {
+      const seq = sequences[type];
+      overlay.classList.add("show");
+      hackLog.textContent = "";
+      finalMsg.style.display = "none";
+      hackTitle.textContent = seq.title;
+
+      let i = 0;
+      function nextLine() {
+        if (i < seq.log.length) {
+          hackLog.textContent += seq.log[i] + "\n";
+          hackLog.scrollTop = hackLog.scrollHeight;
+          i++;
+          setTimeout(nextLine, 600);
+        } else {
+          setTimeout(() => {
+            finalMsg.textContent = seq.final;
+            finalMsg.style.display = "block";
+            setTimeout(() => {
+              overlay.classList.remove("show");
+            }, 2000);
+          }, 800);
+        }
+      }
+
+      setTimeout(nextLine, 800);
+    }
+  </script>
+
+</body>
+</html>
+
