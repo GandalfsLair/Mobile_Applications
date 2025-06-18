@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Pair </title>
+    <style>
+        body {
+            background-color: black;
+            color: lime;
+            font-family: monospace;
+            text-align: center;
+            padding-top: 50px;
+        }
+
+        #circular-progress {
+            width: 50px;
+            height: 50px;
+            border: 5px solid transparent;
+            border-top: 5px solid lime;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        #result {
+            font-size: 24px;
+            font-weight: bold;
+            font-family: monospace;
+            margin-top: 20px;
+            display: none;
+        }
+
+        #success-buttons {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .button-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px;
+        }
+
+        button {
+            background-color: black;
+            color: lime;
+            border: 1px solid lime;
+            padding: 10px;
+            font-size: 16px;
+            font-family: monospace;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+
+        button:hover {
+            background-color: lime;
+            color: black;
+        }
+
+        #messageArea {
+            color: lime;
+            font-size: 18px;
+            font-family: monospace;
+            background-color: black; /* Add a background color */
+        }
+        .success { color: lime; }
+.error { color: red; }
+.warning { color: yellow; }
+    </style>
+</head>
+<body>
+
+    <h2>Force Pair in Progress...</h2>
+    <div id="circular-progress"></div>
+    <p id="result"></p>
+
+    <div id="success-buttons">
+        <div class="button-container">
+            <span>Access Device:</span>
+            <button onclick="replayData()">Access</button>
+
+        </div>
+        <div class="button-container">
+            <span>Share Access:</span>
+            <button onclick="uploadData()">Share</button>
+
+        </div>
+        <div class="button-container">
+            <span>Exit:</span>
+            <button onclick="purgeData()">Exit</button>
+
+        </div>
+    </div>
+
+    <button onclick="startCloningProcess(); clearMessage()">Force Pair</button>
+    <br><br>
+    <p id="messageArea"></p>
+    <div id="progressBarContainer" style="display: none; width: 100%; background-color: black; height: 20px; margin-top: 10px;">
+        <div id="progressBar" style="width: 0%; height: 100%; background-color: lime;"></div>
+    </div>
+    <script>
+        const STATUS = {
+  SUCCESS: "Force Pair Successful",
+  ERROR: "Pairing Error",
+  FAILURE: "Pairing Unsuccessful"
+};
+
+function startCloningProcess() {
+    const progressElement = document.getElementById('circular-progress');
+    const resultElement = document.getElementById('result');
+    const successButtons = document.getElementById('success-buttons');
+    const messageArea = document.getElementById('messageArea');
+
+    // Reset UI
+    progressElement.style.display = 'block';
+    resultElement.style.display = 'none';
+    successButtons.style.display = 'none';
+    resultElement.textContent = '';
+    messageArea.textContent = "Initializing force pair sequence...";
+
+    // Simulate different stages
+    setTimeout(() => {
+        messageArea.textContent = "Bypassing device security...";
+    }, 1000);
+
+    setTimeout(() => {
+        messageArea.textContent = "Injecting pairing payload...";
+    }, 2000);
+
+    // Random delay between 5 to 15 seconds for more realism
+    const delay = Math.floor(Math.random() * (15000 - 5000 + 1)) + 5000;
+
+    setTimeout(() => {
+        progressElement.style.display = 'none';
+        
+        // Weighted random outcome (60% chance of success)
+        const rand = Math.random();
+        let randomOutcome;
+        
+        if (rand < 0.6) {
+            randomOutcome = STATUS.SUCCESS;
+        } else if (rand < 0.8) {
+            randomOutcome = STATUS.ERROR;
+        } else {
+            randomOutcome = STATUS.FAILURE;
+        }
+
+        resultElement.textContent = randomOutcome;
+        resultElement.style.display = 'block';
+        messageArea.textContent = randomOutcome === STATUS.SUCCESS 
+            ? "Device paired successfully!" 
+            : "Pairing attempt failed";
+
+        if (randomOutcome === STATUS.SUCCESS) {
+            resultElement.className = 'success';
+            successButtons.style.display = 'block';
+        } else {
+            resultElement.className = 'error';
+        }
+    }, delay);
+}
+
+ // Placeholder functions for buttons
+ function replayData() {
+            const messageArea = document.getElementById("messageArea");
+            const progressBarContainer = document.getElementById("progressBarContainer");
+            const progressBar = document.getElementById("progressBar");
+
+            // Set initial message
+            messageArea.textContent = "Accessing  Device...";
+    
+            // Show progress bar
+            progressBarContainer.style.display = "block";
+            progressBar.style.width = "0%"; // Reset progress
+
+            let progress = 0;
+            const speed = 50; // Adjust speed (lower = faster, higher = slower)
+
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval); // Stop when full
+                    messageArea.textContent = "Device  Accessed"; // Update message
+                    progressBarContainer.style.display = "none"; // Hide progress bar
+                } else {
+                    progress += 2; // Adjust increment for speed control
+                    progressBar.style.width = progress + "%";
+                }
+            }, speed);
+        }
+
+        function uploadData() {
+            const messageArea = document.getElementById("messageArea");
+            const progressBarContainer = document.getElementById("progressBarContainer");
+            const progressBar = document.getElementById("progressBar");
+
+            // Set initial message
+            messageArea.textContent = "Sharing data...";
+    
+            // Show progress bar
+            progressBarContainer.style.display = "block";
+            progressBar.style.width = "0%"; // Reset progress
+
+            let progress = 0;
+            const speed = 50; // Adjust speed (lower = faster, higher = slower)
+
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval); // Stop when full
+                    messageArea.textContent = "Data Shared"; // Update message
+                    progressBarContainer.style.display = "none"; // Hide progress bar
+                } else {
+                    progress += 2; // Adjust increment for speed control
+                    progressBar.style.width = progress + "%";
+                }
+            }, speed);
+        }
+
+
+        function purgeData() {
+            const messageArea = document.getElementById("messageArea");
+            const progressBarContainer = document.getElementById("progressBarContainer");
+            const progressBar = document.getElementById("progressBar");
+
+            // Set initial message
+            messageArea.textContent = "Deleting data...";
+    
+            // Show progress bar
+            progressBarContainer.style.display = "block";
+            progressBar.style.width = "0%"; // Reset progress
+
+            let progress = 0;
+            const speed = 50; // Adjust speed (lower = faster, higher = slower)
+
+            const interval = setInterval(() => {
+                if (progress >= 100) {
+                    clearInterval(interval); // Stop when full
+                    messageArea.textContent = "Data Deleted "; // Update message
+                    progressBarContainer.style.display = "none"; // Hide progress bar
+                } else {
+                    progress += 2; // Adjust increment for speed control
+                    progressBar.style.width = progress + "%";
+                }
+            }, speed);
+        }
+</script>
+
+</body>
+</html>
