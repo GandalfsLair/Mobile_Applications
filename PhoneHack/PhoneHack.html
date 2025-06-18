@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Force Pair Simulation</title>
+    <style>
+        body {
+            background-color: #000;
+            color: #0f0;
+            font-family: 'Courier New', monospace;
+            padding: 20px;
+            overflow: hidden;
+        }
+        
+        #terminal {
+            background-color: #111;
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 20px;
+            height: 400px;
+            overflow-y: auto;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        
+        .line {
+            margin: 5px 0;
+            white-space: pre-wrap;
+        }
+        
+        .blink {
+            animation: blink 1s step-end infinite;
+        }
+        
+        @keyframes blink {
+            from, to { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .progress-container {
+            width: 100%;
+            background-color: #222;
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            height: 20px;
+            background-color: #0f0;
+            width: 0%;
+            transition: width 0.5s;
+        }
+        
+        .success {
+            color: #0f0;
+            text-shadow: 0 0 5px #0f0;
+        }
+        
+        .failure {
+            color: #f00;
+            text-shadow: 0 0 5px #f00;
+        }
+        
+        .warning {
+            color: #ff0;
+        }
+        
+        button {
+            background-color: #222;
+            color: #0f0;
+            border: 1px solid #0f0;
+            padding: 10px 20px;
+            margin-top: 20px;
+            cursor: pointer;
+            font-family: 'Courier New', monospace;
+        }
+        
+        button:hover {
+            background-color: #0f0;
+            color: #000;
+        }
+        
+        .signal {
+            display: inline-block;
+            margin-left: 10px;
+        }
+        
+        .signal-bar {
+            display: inline-block;
+            width: 5px;
+            margin-right: 2px;
+            background-color: #333;
+        }
+        
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: #111;
+            border: 1px solid #0f0;
+            padding: 20px;
+            width: 300px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.5);
+        }
+        
+        .modal-progress {
+            width: 100%;
+            background-color: #222;
+            margin: 15px 0;
+        }
+        
+        .modal-progress-bar {
+            height: 10px;
+            background-color: #0f0;
+            width: 0%;
+            transition: width 0.3s;
+        }
+        
+        .modal-message {
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <h1>FORCE PAIR v2.4.1</h1>
+    <div id="terminal"></div>
+    <button id="startBtn">INITIATE FORCE PAIR</button>
+    <button id="resetBtn" style="display: none;">RESET APPLICATION</button>
+    <button id="uploadBtn" style="display: none;">UPLOAD TO STORE</button>
+
+    <!-- Modal for upload progress -->
+    <div id="uploadModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-message" id="modalMessage">LOADING TO STORE</div>
+            <div class="modal-progress">
+                <div class="modal-progress-bar" id="modalProgressBar"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const terminal = document.getElementById('terminal');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadModal = document.getElementById('uploadModal');
+        const modalMessage = document.getElementById('modalMessage');
+        const modalProgressBar = document.getElementById('modalProgressBar');
+        
+        function print(text, className = '', isHTML = false) {
+            const line = document.createElement('div');
+            line.className = `line ${className}`;
+            if (isHTML) {
+                line.innerHTML = text;
+            } else {
+                line.textContent = text;
+            }
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+        
+        function printWithDelay(text, delay, className = '', isHTML = false) {
+            return new Promise(resolve => {
+                setTimeout(() => {
+                    print(text, className, isHTML);
+                    resolve();
+                }, delay);
+            });
+        }
+        
+        function animateProgressBar(duration, label) {
+            return new Promise(resolve => {
+                print(label);
+                const container = document.createElement('div');
+                container.className = 'progress-container';
+                const bar = document.createElement('div');
+                bar.className = 'progress-bar';
+                container.appendChild(bar);
+                terminal.appendChild(container);
+                
+                let width = 0;
+                const interval = setInterval(() => {
+                    width += 2;
+                    bar.style.width = `${width}%`;
+                    
+                    if (width >= 100) {
+                        clearInterval(interval);
+                        setTimeout(resolve, 300);
+                    }
+                }, duration / 50);
+            });
+        }
+        
+        function generateRandomSignal() {
+            let signalHtml = '<span class="signal">';
+            const bars = Math.floor(Math.random() * 4) + 1;
+            for (let i = 0; i < 5; i++) {
+                const height = (i + 1) * 5;
+                const active = i < bars ? '#0f0' : '#333';
+                signalHtml += `<span class="signal-bar" style="height:${height}px;background-color:${active}"></span>`;
+            }
+            signalHtml += '</span>';
+            return signalHtml;
+        }
+        
+        function runUpload() {
+            // Show the modal
+            uploadModal.style.display = 'flex';
+            modalMessage.textContent = 'LOADING TO STORE';
+            modalProgressBar.style.width = '0%';
+            
+            // Animate the progress bar
+            let width = 0;
+            const uploadInterval = setInterval(() => {
+                width += 2;
+                modalProgressBar.style.width = `${width}%`;
+                
+                if (width >= 100) {
+                    clearInterval(uploadInterval);
+                    modalMessage.textContent = 'UPLOAD COMPLETE';
+                    
+                    // Close the modal after a delay
+                    setTimeout(() => {
+                        uploadModal.style.display = 'none';
+                        print('Data successfully uploaded to secure store', 'success');
+                    }, 1500);
+                }
+            }, 30);
+        }
+        
+        async function runSimulation() {
+            startBtn.disabled = true;
+            terminal.innerHTML = '';
+            
+            print('=== FORCE PAIR v2.4.1 ===');
+            print(`System Time: ${new Date().toLocaleString()}`);
+            print('Initializing subsystems...');
+            
+            await animateProgressBar(1500, '[1/5] Initializing hardware interfaces...');
+            
+            const devices = [
+                'iPhone 15 Pro (IMEI: ' + Math.random().toString().slice(2, 17) + ')',
+                'Samsung Galaxy S23 (IMEI: ' + Math.random().toString().slice(2, 17) + ')',
+                'Google Pixel 7 Pro (IMEI: ' + Math.random().toString().slice(2, 17) + ')',
+                'OnePlus 11 (IMEI: ' + Math.random().toString().slice(2, 17) + ')'
+            ];
+            
+            const targetDevice = devices[Math.floor(Math.random() * devices.length)];
+            await printWithDelay('[2/5] Scanning for target device...', 500);
+            await printWithDelay(`Target acquired: ${targetDevice} ${generateRandomSignal()}`, 1000, '', true);
+            
+            await printWithDelay('[3/5] Bypassing carrier authentication...', 500);
+            await animateProgressBar(2000, 'Cracking encryption...');
+            
+            await printWithDelay('[4/5] Cloning SIM profile...', 500);
+            await animateProgressBar(2500, 'Extracting subscriber data...');
+            
+            await printWithDelay('[5/5] Establishing mirror connection...', 500);
+            
+            // Blinking cursor effect
+            const connecting = document.createElement('div');
+            connecting.className = 'line blink';
+            connecting.textContent = 'Establishing connection';
+            terminal.appendChild(connecting);
+            
+            // Random outcome (70% success rate)
+            setTimeout(() => {
+                terminal.removeChild(connecting);
+                const success = Math.random() < 0.7;
+                
+                if (success) {
+                    print('STATUS: FORCE PAIR COMPLETE', 'success');
+                    print(`Session ID: ${Math.floor(Math.random() * 900000) + 100000}`, 'success');
+                    print('All calls and messages now being mirrored', 'success');
+                    
+                    // Simulate incoming data
+                    setTimeout(() => {
+                        print('\nINCOMING DATA STREAM:');
+                        print('---------------------');
+                        simulateIncomingData();
+                    }, 1000);
+                } else {
+                    print('ALERT: SECURITY PROTOCOL TRIGGERED', 'failure');
+                    print('Target device terminated connection', 'failure');
+                    print('WIPE IN PROGRESS...', 'failure');
+                    
+                    // Simulate wipe animation
+                    const wipe = document.createElement('div');
+                    wipe.className = 'line';
+                    terminal.appendChild(wipe);
+                    
+                    let dots = '';
+                    const wipeInterval = setInterval(() => {
+                        dots += '.';
+                        wipe.textContent = `Overwriting data${dots}`;
+                        if (dots.length >= 3) {
+                            clearInterval(wipeInterval);
+                            print('WIPE COMPLETE', 'failure');
+                            resetBtn.style.display = 'inline-block';
+                            uploadBtn.style.display = 'inline-block';
+                        }
+                    }, 500);
+                }
+            }, 3000);
+        }
+        
+        function simulateIncomingData() {
+            const messages = [
+                'Incoming call from: ***-***-' + Math.floor(Math.random() * 9000 + 1000),
+                'SMS received: "Meet me at the usual place"',
+                'SMS received: ' + Math.random().toString(36).substring(2, 15),
+                'Data connection established: 4.2Mbps',
+                'Location update received: ' + 
+                    (Math.random() * 90).toFixed(4) + '°N, ' + 
+                    (Math.random() * 180).toFixed(4) + '°W',
+                'Email retrieved: Subject: ' + 
+                    ['URGENT', 'Meeting', 'Project Update', 'Confidential'][Math.floor(Math.random() * 4)]
+            ];
+            
+            let count = 0;
+            const dataInterval = setInterval(() => {
+                print(messages[Math.floor(Math.random() * messages.length)], 'warning');
+                count++;
+                if (count >= 5) {
+                    clearInterval(dataInterval);
+                    resetBtn.style.display = 'inline-block';
+                    uploadBtn.style.display = 'inline-block';
+                }
+            }, 1500);
+        }
+        
+        startBtn.addEventListener('click', runSimulation);
+        resetBtn.addEventListener('click', () => {
+            terminal.innerHTML = '';
+            startBtn.disabled = false;
+            resetBtn.style.display = 'none';
+            uploadBtn.style.display = 'none';
+        });
+        
+        uploadBtn.addEventListener('click', runUpload);
+    </script>
+</body>
+</html>
